@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<title>Phasmaphobia Helper</title>
+<style>
+* { margin: 0; padding: 0 }
+</style>
+<script>
+
+const OBSERVE_HUNT_BEHAVIOR = 0;
+const OBSERVE_GHOST_EVENT = 1;
+const OBSERVE_SANITY_CHANGE = 2;
+const EMF = 3;
+const CAMERA = 4;
+const SMUDGE = 5;
+const SALT = 6;
+
+const attrs = [{
+  "desc": "smudge prevents hunt for 3 minutes instead of 1.5 minutes",
+  "requirements": [OBSERVE_HUNT_BEHAVIOR, SMUDGE],
+  "types": ["spirit"],
+},{
+  "desc": "hunts 1 minute after being smudged (instead of 90 seconds)",
+  "requirements": [OBSERVE_HUNT_BEHAVIOR, SMUDGE],
+  "types": ["demon"],
+},{
+  "desc": "never steps in salt pile",
+  "requirements": [SALT],
+  "types": ["wraith"],
+},{
+  "desc": "teleports to player outside of hunt with EMF 2",
+  "requirements": [EMF], // OBSERVE_IDLE_MOVEMENT? OBSERVE something but not sure what this is exactly
+  "types": ["wraith"],
+},{
+  "desc": "long blinks during hunt (almost invisible, 2 to 3 second blinks?)",
+  "requirements": [OBSERVE_HUNT_BEHAVIOR],
+  "types": ["phantom"],
+},{
+  "desc": "immediately disappears when picture taken during ghost event, but you still hear ghost audio",
+  "requirements": [CAMERA, OBSERVE_GHOST_EVENT],
+  "types": ["phantom"],
+},{
+  "desc": "does not appear in pictures taken",
+  "requirements": [CAMERA, OBSERVE_GHOST_EVENT, OBSERVE_HUNT_BEHAVIOR], // not sure about OBSERVE_HUNT_BEHAVIOR?
+  "types": ["phantom"],
+},{
+  "desc": "wander to targeted player, what does wander mean tho?",
+  "requirements": [OBSERVE_HUNT_BEHAVIOR], // I think?
+  "types": ["phantom"],
+},{
+  "desc": "sanity decreased by 2% for every item thrown",
+  "requirements": [OBSERVE_SANITY_CHANGE],
+  "types": ["poltergeist"],
+},{
+  "desc": "during hunts, 100% chance (instead of 50%) to throw nearby items every .5 seconds",
+  "requirements": [OBSERVE_HUNT_BEHAVIOR],
+  "types": ["poltergeist"],
+/*
+},{
+  "desc":
+  "requirements": [],
+  "types":
+*/
+}];
+
+
+function bodyOnLoad() {
+  var html = '';
+  for (var i = 0; i < attrs.length; i++) {
+    const attr = attrs[i];
+    html += "<div>" + attr.desc + "</div>";
+  }
+  document.getElementById("ContentDiv").innerHTML = html;
+}
+  
+</script>
+</head><body onload="bodyOnLoad()">
+
+<h1>Phasmaphobia Helper</h1>
+
+<div id="ContentDiv"></div>
+</body></html>
