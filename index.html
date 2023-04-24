@@ -3,7 +3,17 @@
 <title>Phasmaphobia Helper</title>
 <style>
 * { margin: 0; padding: 0 }
+
+#TapResetButton {
+    font-size: 30px;
+    padding: 5px 20px;
+}
+#TapButton {
+    font-size: 50px;
+    padding: 5px 20px;
+}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 
 const OBSERVE_HUNT_BEHAVIOR = 0;
@@ -63,19 +73,113 @@ const attrs = [{
 }];
 
 
+function get(id) {
+    return document.getElementById(id);
+}
+
+let global = {
+    chart: null,
+    last_tap: null,
+};
+
+const known_bpms = {
+     77: "Revenant",
+    100: "Twin",
+    115: "Normal",
+    135: "Twin",
+    157: "Moroi",
+    174: "Raiju/Jinn",
+    192: "Thaye",
+    209: "Revenant",
+};
+
+function onTapReset() {
+    global.last_tap = null;
+    if (global.chart) {
+        global.chart.destroy();
+        global.chart = null;
+    }
+}
+
+function onTap() {
+    const now_tap = Date.now() / 1000;
+    const last_tap = global.last_tap;
+    global.last_tap = now_tap;
+    if (last_tap == null) return;
+    const bpm = Math.round( 60 / (now_tap - last_tap) * 100) / 100;
+
+    const MIN_TEMPO = 50;
+    const MAX_TEMPO = 230;
+
+    get("TapStatus").innerHTML = "Last BPM " + bpm;
+    if (bpm < MIN_TEMPO) {
+        get("TapStatus").innerHTML += " (dropped, too low)";
+        return;
+    }
+    if (bpm > MAX_TEMPO) {
+        get("TapStatus").innerHTML += " (dropped, too high)";
+        return;
+    }
+
+    if (global.chart == null) {
+        global.chart = new Chart(get("TempoChart"), {
+           type: "line",
+           data: {
+               labels: [],
+               datasets: [{
+                   label: 'BPM!',
+                   data: [],
+               }],
+           },
+           options: {
+               scales: {
+                   y: {
+                       min: MIN_TEMPO,
+                       max: MAX_TEMPO,
+                       ticks: {
+                           stepSize: 1,
+                           callback:function(val) {
+                               const name = known_bpms[val];
+                               if (!name) return null;
+                               return name + ": " + val;
+                           },
+                       },
+                   },
+               },
+           },
+       });
+    }
+
+    console.log("bpm " + global.chart.data.labels.length + " is " + bpm);
+    global.chart.data.labels.push(global.chart.data.labels.length);
+    global.chart.data.datasets[0].data.push(bpm);
+    global.chart.update();
+}
+
 function bodyOnLoad() {
+
   var html = '';
   for (var i = 0; i < attrs.length; i++) {
     const attr = attrs[i];
     html += "<div>" + attr.desc + "</div>";
   }
-  document.getElementById("ContentDiv").innerHTML = html;
+  get("ContentDiv").innerHTML = html;
 }
-  
+
 </script>
 </head><body onload="bodyOnLoad()">
 
 <h1>Phasmaphobia Helper</h1>
 
 <div id="ContentDiv"></div>
+
+<div>
+  <div>
+      <button id="TapResetButton" onclick="onTapReset()">Reset</button>
+      <button id="TapButton" onclick="onTap()">Tap</button>
+      <span id="TapStatus"></span>
+  </div>
+  <canvas id="TempoChart"></canvas>
+</div>
+
 </body></html>
