@@ -112,11 +112,11 @@ function onTap() {
     const bpm = Math.round( 60 / (now_tap - last_tap) * 100) / 100;
 
     get("TapStatus").innerHTML = "Last BPM " + bpm;
-    if (bpm < MIN_TEMPO) {
+    if (bpm < 50) {
         get("TapStatus").innerHTML += " (dropped, too low)";
         return;
     }
-    if (bpm > MAX_TEMPO) {
+    if (bpm > 400) {
         get("TapStatus").innerHTML += " (dropped, too high)";
         return;
     }
