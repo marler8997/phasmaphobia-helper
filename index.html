@@ -77,6 +77,8 @@ function get(id) {
     return document.getElementById(id);
 }
 
+const MIN_TEMPO = 50;
+const MAX_TEMPO = 230;
 let global = {
     chart: null,
     last_tap: null,
@@ -95,10 +97,10 @@ const known_bpms = {
 
 function onTapReset() {
     global.last_tap = null;
-    if (global.chart) {
-        global.chart.destroy();
-        global.chart = null;
-    }
+    get("TapStatus").innerHTML = "";
+    global.chart.data.labels = [];
+    global.chart.data.datasets[0].data = [];
+    global.chart.update();
 }
 
 function onTap() {
@@ -107,9 +109,6 @@ function onTap() {
     global.last_tap = now_tap;
     if (last_tap == null) return;
     const bpm = Math.round( 60 / (now_tap - last_tap) * 100) / 100;
-
-    const MIN_TEMPO = 50;
-    const MAX_TEMPO = 230;
 
     get("TapStatus").innerHTML = "Last BPM " + bpm;
     if (bpm < MIN_TEMPO) {
@@ -121,35 +120,6 @@ function onTap() {
         return;
     }
 
-    if (global.chart == null) {
-        global.chart = new Chart(get("TempoChart"), {
-           type: "line",
-           data: {
-               labels: [],
-               datasets: [{
-                   label: 'BPM!',
-                   data: [],
-               }],
-           },
-           options: {
-               scales: {
-                   y: {
-                       min: MIN_TEMPO,
-                       max: MAX_TEMPO,
-                       ticks: {
-                           stepSize: 1,
-                           callback:function(val) {
-                               const name = known_bpms[val];
-                               if (!name) return null;
-                               return name + ": " + val;
-                           },
-                       },
-                   },
-               },
-           },
-       });
-    }
-
     console.log("bpm " + global.chart.data.labels.length + " is " + bpm);
     global.chart.data.labels.push(global.chart.data.labels.length);
     global.chart.data.datasets[0].data.push(bpm);
@@ -158,12 +128,39 @@ function onTap() {
 
 function bodyOnLoad() {
 
-  var html = '';
-  for (var i = 0; i < attrs.length; i++) {
-    const attr = attrs[i];
-    html += "<div>" + attr.desc + "</div>";
-  }
-  get("ContentDiv").innerHTML = html;
+    var html = '';
+    for (var i = 0; i < attrs.length; i++) {
+      const attr = attrs[i];
+      html += "<div>" + attr.desc + "</div>";
+    }
+    get("ContentDiv").innerHTML = html;
+
+    global.chart = new Chart(get("TempoChart"), {
+       type: "line",
+       data: {
+           labels: [],
+           datasets: [{
+               label: 'BPM!',
+               data: [],
+           }],
+       },
+       options: {
+           scales: {
+               y: {
+                   min: MIN_TEMPO,
+                   max: MAX_TEMPO,
+                   ticks: {
+                       stepSize: 1,
+                       callback:function(val) {
+                           const name = known_bpms[val];
+                           if (!name) return null;
+                           return name + ": " + val;
+                       },
+                   },
+               },
+           },
+       },
+   });
 }
 
 </script>
