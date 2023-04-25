@@ -100,6 +100,7 @@ function onTapReset() {
     get("TapStatus").innerHTML = "";
     global.chart.data.labels = [];
     global.chart.data.datasets[0].data = [];
+    global.chart.data.datasets[1].data = [];
     global.chart.update();
 }
 
@@ -123,7 +124,38 @@ function onTap() {
     console.log("bpm " + global.chart.data.labels.length + " is " + bpm);
     global.chart.data.labels.push(global.chart.data.labels.length);
     global.chart.data.datasets[0].data.push(bpm);
+    updateAverages(global.chart.data.datasets[0].data, global.chart.data.datasets[1].data);
     global.chart.update();
+}
+
+function saturatedIndex(arr, i)
+{
+    if (i < 0) return arr[0];
+    if (i >= arr.length) return arr[arr.length - 1];
+    return arr[i];
+}
+
+const AVG_REACH = 3;
+
+function updateAverages(raw, avg) {
+    while (avg.length < raw.length) {
+        avg.push(0);
+    }
+
+    let start = raw.length - 1 - AVG_REACH;
+    if (start < 0) start = 0;
+
+    for (let i = start; i < raw.length; i++) {
+        fixAverage(raw, avg, i);
+    }
+}
+function fixAverage(raw, avg, i)
+{
+    let total = 0;
+    for (let j = i - AVG_REACH; j < i + AVG_REACH + 1; j++) {
+        total += saturatedIndex(raw, j);
+    }
+    avg[i] = total / (AVG_REACH * 2 + 1);
 }
 
 function bodyOnLoad() {
@@ -140,7 +172,10 @@ function bodyOnLoad() {
        data: {
            labels: [],
            datasets: [{
-               label: 'BPM!',
+               label: 'Raw BPM',
+               data: [],
+           },{
+               label: 'Averaged',
                data: [],
            }],
        },
